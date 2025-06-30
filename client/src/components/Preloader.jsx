@@ -4,24 +4,23 @@ const Preloader = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1500);
+    const timer = setTimeout(() => setLoading(false), 1800);
     return () => clearTimeout(timer);
   }, []);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-blue-100 to-indigo-200">
-        <div className="text-center">
-          <div className="mb-6">
-            <div className="w-20 h-20 rounded-full bg-white shadow-lg mx-auto relative animate-pulse border-4 border-blue-500" />
-            <div className="mt-4 text-xl font-semibold text-indigo-700 tracking-wide">
-              SilentVote is getting ready...
-            </div>
+      <div className="flex items-center justify-center h-screen bg-gradient-to-tr from-indigo-100 to-blue-200">
+        <div className="flex flex-col items-center space-y-6">
+          {/* Ring Spinner */}
+          <div className="relative w-16 h-16">
+            <div className="absolute inset-0 border-4 border-indigo-300 rounded-full animate-spin border-t-transparent" />
+            <div className="absolute inset-2 bg-white rounded-full" />
           </div>
-          <div className="flex justify-center items-center space-x-2">
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" />
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce delay-100" />
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce delay-200" />
+
+          {/* Typewriter Text */}
+          <div className="text-xl font-mono text-indigo-800 animate-typing overflow-hidden border-r-2 border-indigo-800 whitespace-nowrap">
+            Launching SilentVote...
           </div>
         </div>
       </div>
