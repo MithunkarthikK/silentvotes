@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import API from '../services/api';
-import { useNavigate , Link } from 'react-router-dom';
+import { useNavigate} from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 export default function Register() {
@@ -42,15 +42,6 @@ export default function Register() {
         >
           Register
         </button>
-        <p className="mt-4 text-center text-sm text-gray-600">
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-blue-600 font-medium hover:underline"
-          >
-            Login here
-          </Link>
-        </p>
       </div>
     </div>
   );
