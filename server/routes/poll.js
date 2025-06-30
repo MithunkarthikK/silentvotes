@@ -2,6 +2,32 @@ const router = require('express').Router();
 const Poll = require('../models/Poll');
 const jwt = require('jsonwebtoken');
 
+
+router.post('/create', async (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).send("Unauthorized");
+
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const userId = decoded.id;
+
+  const { question, options } = req.body;
+
+  if (!question || !options || !Array.isArray(options)) {
+    return res.status(400).send("Invalid input");
+  }
+
+  const newPoll = new Poll({
+    question,
+    options,
+    votes: Array(options.length).fill(0),
+    createdBy: userId
+  });
+
+  await newPoll.save();
+  res.status(201).send("Poll created");
+});
+
+
 router.post('/create', async (req, res) => {
   const { question, options, userId } = req.body;
   const newPoll = new Poll({

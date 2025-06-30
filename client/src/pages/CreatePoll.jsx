@@ -14,8 +14,7 @@ export default function CreatePoll() {
       return;
     }
     try {
-      const userId = 'mock-user'; // replace with decoded JWT if needed
-      await API.post('/poll/create', { question, options, userId });
+      await API.post('/poll/create', { question, options });
       toast.success('Poll created');
       navigate('/dashboard');
     } catch {
