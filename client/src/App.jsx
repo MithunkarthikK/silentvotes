@@ -7,14 +7,17 @@ import PollResults from './pages/PollResults';
 import Navbar from './components/Navbar';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Preloader from './components/Preloader';
 
 function App() {
   return (
     <BrowserRouter>
       <Navbar />
+      <Preloader />
       <ToastContainer />
+      
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Login/>} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />

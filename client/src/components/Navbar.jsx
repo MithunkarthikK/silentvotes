@@ -8,6 +8,8 @@ export default function Navbar() {
   return (
     <nav className="bg-indigo-700 text-white p-4 flex justify-between">
       <div className="flex gap-4">
+        <Link to="/" className="hover:underline">Silent Votes</Link>
+        
         <Link to="/dashboard" className="hover:underline">Dashboard</Link>
         <Link to="/create" className="hover:underline">Create</Link>
         <Link to="/results" className="hover:underline">Results</Link>
