@@ -47,7 +47,7 @@ Responsive and clean UI
 Toast notifications for all actions
 
 📂 Project Structure
-bash
+bash```
 Copy
 Edit
 ├── client/           # React frontend
@@ -61,15 +61,17 @@ Edit
 │   ├── models/
 │   ├── middleware/
 │   └── .env          # Mongo URI, JWT secrets, etc.
+```
 ⚙️ Setup Instructions
 🔧 Clone the repo
-bash
+bash```
 Copy
 Edit
 git clone https://github.com/your-username/silentvotes.git
 cd silentvotes
+```
 ⚙️ Backend Setup
-bash
+bash```
 Copy
 Edit
 cd server
@@ -77,13 +79,15 @@ npm install
 cp .env.example .env
 # Add your MONGO_URI and JWT_SECRET in .env
 npm start
+```
 🌐 Frontend Setup
-bash
+bash```
 Copy
 Edit
 cd client
 npm install
 npm run dev
+```
 🛡️ Environment Variables (.env)
 Create a .env file in /server with:
 
@@ -92,8 +96,7 @@ Copy
 Edit
 MONGO_URI=your_mongo_connection_string
 JWT_SECRET=your_jwt_secret
-EMAIL_USER=your_email@example.com
-EMAIL_PASS=your_email_password
+
 CLIENT_URL=http://localhost:5173
 🎥 Walkthrough Video
 📹 Watch the demo walkthrough
