@@ -55,7 +55,8 @@ Toast notifications for all actions
 
 📂 Project Structure
 
-bash```
+bash
+```
 ├── client/           # React frontend
 │   └── src/
 │       ├── components/
@@ -73,12 +74,14 @@ bash```
 ⚙️ Setup Instructions
 
 🔧 Clone the repo
-bash```
+bash
+```
 git clone https://github.com/your-username/silentvotes.git
 cd silentvotes
 ```
 ⚙️ Backend Setup
-bash```
+bash
+```
 cd server
 npm install
 cp .env.example .env
@@ -86,7 +89,8 @@ cp .env.example .env
 npm start
 ```
 🌐 Frontend Setup
-bash```
+bash
+```
 cd client
 npm install
 npm run dev
@@ -94,7 +98,8 @@ npm run dev
 🛡️ Environment Variables (.env)
 Create a .env file in /server with:
 
-ini```
+ini
+```
 MONGO_URI=your_mongo_connection_string
 JWT_SECRET=your_jwt_secret
 ```
