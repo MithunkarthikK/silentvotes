@@ -9,6 +9,8 @@ import Navbar from './components/Navbar';
 import Preloader from './components/Preloader';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import 'react-loading-skeleton/dist/skeleton.css';
+
 
 function AppContent() {
   const location = useLocation();
