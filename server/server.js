@@ -6,7 +6,7 @@ require('dotenv').config();
 const app = express();
 
 app.use(cors({
-  origin: 'https://silentvotes.vercel.app/', 
+  origin: 'https://silentvotes.vercel.app', 
   credentials: true
 }));
 
