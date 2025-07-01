@@ -1,48 +1,111 @@
-# SilentVote 🗳️
+📄 SilentVote – Anonymous Polling Web App
+SilentVote is a modern, full-stack web app that allows users to create and participate in anonymous polls with real-time results visualization using charts.
 
-A secure voting web app built with React, Node.js, Express, and MongoDB.
+🎯 Built as part of a full-stack assignment using React.js, Node.js, Express, and MongoDB.
 
-## 🔐 Features
-- Email Registration & Login
-- JWT Authentication
-- Poll Creation
-- Live Voting & Results
-- Public/Private Poll Access
+🚀 Live Demo
+🔗 View Deployed App
 
-## 🚀 Live Demo
-- Frontend: https://silentvotes.vercel.app
-- Backend: https://silentvotes.onrender.com
+🖥️ Login Credentials (for demo/testing):
 
-## 🛠️ Technologies Used
-- React + Vite
-- Node.js + Express
-- MongoDB (via Mongoose)
-- Render & Vercel for deployment
+bash
+Copy
+Edit
+Email: test@silentvote.com
+Password: Test@123
+📦 Tech Stack
+Frontend	Backend	Database	Auth	UI/UX
+React.js	Node.js	MongoDB	JWT	Tailwind CSS
+Chart.js	Express.js	Mongoose	bcrypt	React Toastify
+React Router	CORS	dotenv		react-loading-skeleton
 
-## 📦 Setup Instructions
+✨ Features
+🔐 User Authentication
 
-1. Clone the repository
-2. Add `.env` files for backend and frontend
+Register, Login, Logout
 
-### `.env` (backend)
-MONGO_URI=your_mongo_url
-JWT_SECRET=your_secret_key
+Forgot password via email token
 
-shell
-### `.env` (frontend)
-VITE_API_URL=https://silentvotes.onrender.com/api
+🗳️ Poll Management
 
+Create polls with custom options
 
-3. Run backend:
-```bash
+View active polls and vote anonymously
+
+📊 Live Poll Results
+
+Pie chart visualization of voting data
+
+Percentage and vote count display
+
+⚡ User Experience
+
+Shimmer loaders during API fetches
+
+Responsive and clean UI
+
+Toast notifications for all actions
+
+📂 Project Structure
+bash
+Copy
+Edit
+├── client/           # React frontend
+│   └── src/
+│       ├── components/
+│       ├── pages/
+│       ├── services/api.js
+├── server/           # Express backend
+│   ├── routes/
+│   ├── controllers/
+│   ├── models/
+│   ├── middleware/
+│   └── .env          # Mongo URI, JWT secrets, etc.
+⚙️ Setup Instructions
+🔧 Clone the repo
+bash
+Copy
+Edit
+git clone https://github.com/your-username/silentvotes.git
+cd silentvotes
+⚙️ Backend Setup
+bash
+Copy
+Edit
 cd server
 npm install
+cp .env.example .env
+# Add your MONGO_URI and JWT_SECRET in .env
 npm start
-```
-
-4. Run frontend:
-```bash
+🌐 Frontend Setup
+bash
+Copy
+Edit
 cd client
 npm install
 npm run dev
-```
+🛡️ Environment Variables (.env)
+Create a .env file in /server with:
+
+ini
+Copy
+Edit
+MONGO_URI=your_mongo_connection_string
+JWT_SECRET=your_jwt_secret
+EMAIL_USER=your_email@example.com
+EMAIL_PASS=your_email_password
+CLIENT_URL=http://localhost:5173
+🎥 Walkthrough Video
+📹 Watch the demo walkthrough
+
+🙌 Acknowledgments
+Thanks to Chart.js
+
+Icons from Heroicons
+
+UI Inspired by Tailwind and React community
+
+🧑‍💻 Author
+👋 Mithunkarthik K
+💼 Role: Full-stack Developer
+📫 Email: k.k.mithunkarthik@gmail.com
