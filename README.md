@@ -1,25 +1,28 @@
 📄 SilentVote – Anonymous Polling Web App
+
 SilentVote is a modern, full-stack web app that allows users to create and participate in anonymous polls with real-time results visualization using charts.
 
 🎯 Built as part of a full-stack assignment using React.js, Node.js, Express, and MongoDB.
 
 🚀 Live Demo
-🔗 View Deployed App
+🔗 [View Deployed App](https://silentvotes.vercel.app)
 
 🖥️ Login Credentials (for demo/testing):
 
-bash
-Copy
-Edit
-Email: test@silentvote.com
-Password: Test@123
+bash```
+Email: demo@silentvote.com
+Password: 123456
+```
+
 📦 Tech Stack
+
 Frontend	Backend	Database	Auth	UI/UX
 React.js	Node.js	MongoDB	JWT	Tailwind CSS
 Chart.js	Express.js	Mongoose	bcrypt	React Toastify
 React Router	CORS	dotenv		react-loading-skeleton
 
 ✨ Features
+
 🔐 User Authentication
 
 Register, Login, Logout
@@ -48,8 +51,6 @@ Toast notifications for all actions
 
 📂 Project Structure
 bash```
-Copy
-Edit
 ├── client/           # React frontend
 │   └── src/
 │       ├── components/
@@ -61,19 +62,17 @@ Edit
 │   ├── models/
 │   ├── middleware/
 │   └── .env          # Mongo URI, JWT secrets, etc.
+
 ```
 ⚙️ Setup Instructions
+
 🔧 Clone the repo
 bash```
-Copy
-Edit
 git clone https://github.com/your-username/silentvotes.git
 cd silentvotes
 ```
 ⚙️ Backend Setup
 bash```
-Copy
-Edit
 cd server
 npm install
 cp .env.example .env
@@ -82,8 +81,6 @@ npm start
 ```
 🌐 Frontend Setup
 bash```
-Copy
-Edit
 cd client
 npm install
 npm run dev
@@ -91,13 +88,12 @@ npm run dev
 🛡️ Environment Variables (.env)
 Create a .env file in /server with:
 
-ini
-Copy
-Edit
+ini```
 MONGO_URI=your_mongo_connection_string
 JWT_SECRET=your_jwt_secret
-
+```
 CLIENT_URL=http://localhost:5173
+
 🎥 Walkthrough Video
 📹 Watch the demo walkthrough
 
@@ -109,6 +105,9 @@ Icons from Heroicons
 UI Inspired by Tailwind and React community
 
 🧑‍💻 Author
+
 👋 Mithunkarthik K
+
 💼 Role: Full-stack Developer
+
 📫 Email: k.k.mithunkarthik@gmail.com
