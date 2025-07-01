@@ -9,17 +9,21 @@ SilentVote is a modern, full-stack web app that allows users to create and parti
 
 🖥️ Login Credentials (for demo/testing):
 
-bash```
 Email: demo@silentvote.com
+
 Password: 123456
-```
+
 
 📦 Tech Stack
 
 Frontend	Backend	Database	Auth	UI/UX
+
 React.js	Node.js	MongoDB	JWT	Tailwind CSS
+
 Chart.js	Express.js	Mongoose	bcrypt	React Toastify
+
 React Router	CORS	dotenv		react-loading-skeleton
+
 
 ✨ Features
 
@@ -50,6 +54,7 @@ Responsive and clean UI
 Toast notifications for all actions
 
 📂 Project Structure
+
 bash```
 ├── client/           # React frontend
 │   └── src/
@@ -64,6 +69,7 @@ bash```
 │   └── .env          # Mongo URI, JWT secrets, etc.
 
 ```
+
 ⚙️ Setup Instructions
 
 🔧 Clone the repo
@@ -92,12 +98,14 @@ ini```
 MONGO_URI=your_mongo_connection_string
 JWT_SECRET=your_jwt_secret
 ```
+
 CLIENT_URL=http://localhost:5173
 
 🎥 Walkthrough Video
 📹 Watch the demo walkthrough
 
 🙌 Acknowledgments
+
 Thanks to Chart.js
 
 Icons from Heroicons
