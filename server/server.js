@@ -6,7 +6,7 @@ require('dotenv').config();
 const app = express();
 
 app.use(cors({
-  origin: 'https://your-frontend.vercel.app', // Replace with your actual frontend domain
+  origin: 'https://silentvotes.vercel.app/', 
   credentials: true
 }));
 
@@ -15,7 +15,6 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/poll', require('./routes/poll'));
 
-// ✅ Add this to handle GET /
 app.get('/', (req, res) => {
   res.send('SilentVote API is running 🚀');
 });
