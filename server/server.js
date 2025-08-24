@@ -2,12 +2,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
-const fetch = require('node-fetch');
+// Prefer native fetch if using Node.js 18+
+// const fetch = require('node-fetch');
 const User = require('./models/User');
 
 const app = express();
 
-// 🔐 CORS Configuration
 app.use(cors({
   origin: 'https://silentvotes.vercel.app',
   credentials: true
@@ -15,50 +15,48 @@ app.use(cors({
 
 app.use(express.json());
 
-// 🔗 API Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/poll', require('./routes/poll'));
 
-// 🌐 Root & Health Check
-app.get('/', (req, res) => {
-  res.send('SilentVote API is running 🚀');
-});
-app.get('/ping', (req, res) => {
-  res.send('Backend is active ✅');
-});
+app.get('/', (req, res) => res.send('SilentVote API is running 🚀'));
+app.get('/ping', (req, res) => res.send('Backend is active ✅'));
 
-// 🔌 MongoDB Connection
 const PORT = process.env.PORT || 5000;
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => {
-  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-  startKeepAlive(); // ✅ Start keep-alive functions only after DB connects
-})
-.catch(err => {
-  console.error('❌ MongoDB connection error:', err.message);
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => {
+    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    startKeepAlive();
+  })
+  .catch(err => {
+    console.error('❌ MongoDB connection error:', err.message);
+  });
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  await mongoose.disconnect();
+  console.log('🚦MongoDB disconnected, server shutting down.');
+  process.exit(0);
 });
 
-
-// 🔁 Keep-Alive Jobs (MongoDB + Self)
 function startKeepAlive() {
-  // ⏱️ MongoDB Keep-Alive
+  // MongoDB Keep-Alive (using a lightweight ping)
   setInterval(async () => {
     try {
-      await User.findOne();
+      await mongoose.connection.db.admin().ping();
       console.log('✅ MongoDB keep-alive ping successful');
     } catch (err) {
       console.error('❌ MongoDB keep-alive failed:', err.message);
     }
-  }, 5 * 60 * 1000); // every 5 minutes
+  }, 5 * 60 * 1000);
 
-  // 🌐 Backend Self-Ping (to keep Render awake)
+  // Backend Self-Ping (Native fetch if Node 18+, otherwise use node-fetch)
   setInterval(() => {
     fetch('https://silentvotes.onrender.com/ping')
-      .then(() => console.log('🔄 Backend self-ping successful'))
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        console.log('🔄 Backend self-ping successful');
+      })
       .catch(err => console.error('❌ Backend self-ping failed:', err.message));
-  }, 5 * 60 * 1000); // every 5 minutes
+  }, 5 * 60 * 1000);
 }
