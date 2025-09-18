@@ -16,6 +16,7 @@ const verifyToken = async (req, res, next) => {
     req.user = decodedToken;
     next();
   } catch (err) {
+    console.error("Token verification error:", err);
     res.status(401).json({ message: "Invalid token", error: err.message });
   }
 };
@@ -28,12 +29,15 @@ router.post("/sync", verifyToken, async (req, res) => {
 
     const userRef = db.collection("users").doc(uid);
     const userDoc = await userRef.get();
+    const now = new Date();
 
     if (userDoc.exists) {
-      // Update existing user
+      // Update existing user: update last login and optionally update name
       await userRef.update({
         name: decodedName || username || userDoc.data().name || "",
-        updatedAt: new Date(),
+        updatedAt: now,
+        lastLogin: now,
+        loginHistory: admin.firestore.FieldValue.arrayUnion(now), // track login times
       });
     } else {
       // Create new user
@@ -41,16 +45,17 @@ router.post("/sync", verifyToken, async (req, res) => {
         uid,
         email,
         name: decodedName || username || "",
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: now,
+        updatedAt: now,
+        lastLogin: now,
+        loginHistory: [now], // first login
       });
     }
 
-    res.json({ message: "User synced successfully" });
+    res.json({ message: "User synced successfully", uid });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to sync user", error: err.message });
+    console.error("User sync failed:", err);
+    res.status(500).json({ message: "Failed to sync user", error: err.message });
   }
 });
 

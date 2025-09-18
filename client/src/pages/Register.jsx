@@ -8,7 +8,7 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import axios from "axios";
-import app from "../firebase"; // ✅ explicit Firebase app import
+import app from "../firebase";
 
 export default function Register() {
   const [username, setUsername] = useState("");
@@ -21,17 +21,12 @@ export default function Register() {
   const navigate = useNavigate();
   const auth = getAuth(app);
 
-  // 🔹 Sync user with backend Firestore
   const syncUserWithBackend = async (user, name) => {
     try {
       const token = await user.getIdToken();
       await axios.post(
         `${import.meta.env.VITE_API_URL}/users/sync`,
-        {
-          uid: user.uid,
-          email: user.email,
-          name: name || user.displayName || "",
-        },
+        { uid: user.uid, email: user.email, name: name || user.displayName || "" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
     } catch (err) {
@@ -39,25 +34,17 @@ export default function Register() {
     }
   };
 
-  // 🔹 Email/password registration
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (!username || !email || !password || !confirmPass) {
-      return alert("Please fill in all fields");
-    }
-    if (password !== confirmPass) {
-      return alert("Passwords do not match");
-    }
+    if (!username || !email || !password || !confirmPass) return alert("Please fill in all fields");
+    if (password !== confirmPass) return alert("Passwords do not match");
 
     setLoading(true);
     try {
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
       const token = await user.getIdToken();
       localStorage.setItem("token", token);
-
-      // Sync user with backend, using input username
       await syncUserWithBackend(user, username);
-
       alert("✅ Registration successful");
       navigate("/dashboard");
     } catch (error) {
@@ -68,7 +55,6 @@ export default function Register() {
     }
   };
 
-  // 🔹 Google signup/login
   const handleGoogleSignup = async () => {
     setLoading(true);
     try {
@@ -76,10 +62,7 @@ export default function Register() {
       const { user } = await signInWithPopup(auth, provider);
       const token = await user.getIdToken();
       localStorage.setItem("token", token);
-
-      // Sync user with backend using displayName if username not provided
       await syncUserWithBackend(user, user.displayName);
-
       alert("✅ Google signup/login successful");
       navigate("/dashboard");
     } catch (error) {
@@ -91,39 +74,49 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 px-4">
-      <div className="bg-white/80 backdrop-blur-md shadow-2xl p-8 sm:p-10 rounded-xl w-full max-w-md transition-transform duration-300 hover:scale-[1.02]">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
+    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700 overflow-hidden px-4">
+      {/* Animated background shapes */}
+      <div className="absolute top-0 left-0 w-full h-full -z-10">
+        <div className="w-96 h-96 bg-pink-400/30 rounded-full blur-3xl absolute -top-40 -left-40 animate-pulse-slow"></div>
+        <div className="w-72 h-72 bg-indigo-400/20 rounded-full blur-2xl absolute -bottom-32 -right-20 animate-pulse-slow"></div>
+      </div>
+
+      {/* Glassmorphic card */}
+      <div className="relative bg-white/20 backdrop-blur-2xl shadow-xl rounded-3xl w-full max-w-md p-10 border border-white/30 hover:shadow-2xl transition-transform transform hover:scale-105">
+        <h2 className="text-4xl font-extrabold text-center text-white mb-8 drop-shadow-lg">
           Create Account 🚀
         </h2>
 
-        <form onSubmit={handleRegister} className="space-y-5">
+        <form onSubmit={handleRegister} className="space-y-6">
+          {/* Username */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+            <label className="block text-sm font-semibold text-white/90 mb-1">Username</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
               placeholder="yourname123"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-5 py-3 rounded-xl border border-white/40 bg-white/10 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition shadow-md"
             />
           </div>
 
+          {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-semibold text-white/90 mb-1">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="you@example.com"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-5 py-3 rounded-xl border border-white/40 bg-white/10 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition shadow-md"
             />
           </div>
 
+          {/* Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="block text-sm font-semibold text-white/90 mb-1">Password</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -131,19 +124,20 @@ export default function Register() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
-                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-5 py-3 pr-12 rounded-xl border border-white/40 bg-white/10 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition shadow-md"
               />
               <span
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/70 cursor-pointer hover:text-white transition"
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </span>
             </div>
           </div>
 
+          {/* Confirm Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+            <label className="block text-sm font-semibold text-white/90 mb-1">Confirm Password</label>
             <div className="relative">
               <input
                 type={showConfirm ? "text" : "password"}
@@ -151,38 +145,43 @@ export default function Register() {
                 onChange={(e) => setConfirmPass(e.target.value)}
                 required
                 placeholder="••••••••"
-                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-5 py-3 pr-12 rounded-xl border border-white/40 bg-white/10 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition shadow-md"
               />
               <span
                 onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/70 cursor-pointer hover:text-white transition"
               >
                 {showConfirm ? <FaEyeSlash /> : <FaEye />}
               </span>
             </div>
           </div>
 
+          {/* Register button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-lg transition duration-200 disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? "Registering..." : "Register"}
           </button>
 
+          {/* Google signup */}
           <button
             type="button"
             onClick={handleGoogleSignup}
             disabled={loading}
-            className="w-full mt-3 flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition duration-200 disabled:opacity-50"
+            className="w-full mt-3 flex items-center justify-center gap-3 bg-white/20 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 disabled:opacity-50"
           >
-            <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google" className="w-5 h-5" />
+            <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google" className="w-6 h-6" />
             {loading ? "Please wait..." : "Sign up with Google"}
           </button>
 
-          <p className="text-center text-sm text-gray-600 mt-4">
+          {/* Login link */}
+          <p className="text-center text-sm text-white/80 mt-4">
             Already have an account?{" "}
-            <Link to="/login" className="text-indigo-600 font-medium hover:underline">Sign in</Link>
+            <Link to="/login" className="text-pink-400 font-medium hover:underline hover:text-pink-300 transition">
+              Sign in
+            </Link>
           </p>
         </form>
       </div>

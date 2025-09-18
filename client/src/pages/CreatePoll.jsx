@@ -1,14 +1,19 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import API from '../services/api';
 import { toast } from 'react-toastify';
-import CreatePollSkeleton from '../components/CreatePollSkeleton'; // ✅ import shimmer
+import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+import app from '../firebase'; // make sure this is your Firebase app
+import CreatePollSkeleton from '../components/CreatePollSkeleton';
 
 export default function CreatePoll() {
   const [question, setQuestion] = useState('');
-  const [options, setOptions] = useState(['', '']);
-  const [loading, setLoading] = useState(false); // ✅ loading state
+  const [options, setOptions] = useState(['', '']); // min 2 options
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
   const handleOptionChange = (index, value) => {
     const updatedOptions = [...options];
@@ -22,19 +27,34 @@ export default function CreatePoll() {
       return;
     }
 
-    setLoading(true); // 🟢 show shimmer
+    setLoading(true);
     try {
-      await API.post('/poll/create', { question, options });
+      const user = auth.currentUser;
+      if (!user) {
+        toast.error('You must be logged in to create a poll');
+        setLoading(false);
+        return;
+      }
+
+      const formattedOptions = options.map(opt => ({ text: opt, votes: 0 }));
+
+      await addDoc(collection(db, 'polls'), {
+        title: question,
+        options: formattedOptions,
+        createdBy: user.uid,
+        createdAt: serverTimestamp(),
+      });
+
       toast.success('Poll created successfully!');
       navigate('/dashboard');
-    } catch {
+    } catch (err) {
+      console.error('Error creating poll:', err);
       toast.error('Poll creation failed');
     } finally {
-      setLoading(false); // 🔴 stop shimmer
+      setLoading(false);
     }
   };
 
-  // ✅ Show shimmer while submitting
   if (loading) return <CreatePollSkeleton />;
 
   return (
@@ -79,4 +99,3 @@ export default function CreatePoll() {
     </div>
   );
 }
-
