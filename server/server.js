@@ -10,16 +10,30 @@ import { pollRoutes } from "./routes/poll.js";
 
 dotenv.config();
 
-// Initialize Firebase Admin SDK safely
-const serviceAccountPath = path.resolve("./keys.json"); // adjust if keys.json is elsewhere
-const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf8"));
+let serviceAccount;
 
+// ✅ Use local file in development, env variable in production
+if (process.env.NODE_ENV === "production") {
+  if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+    throw new Error("FIREBASE_SERVICE_ACCOUNT env variable is missing!");
+  }
+  serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+} else {
+  // Local development: read keys.json
+  const serviceAccountPath = path.resolve("./keys.json");
+  if (!fs.existsSync(serviceAccountPath)) {
+    throw new Error(`Local keys.json not found at ${serviceAccountPath}`);
+  }
+  serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf8"));
+}
+
+// Initialize Firebase Admin
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
 });
 
-export const db = admin.firestore(); // Export Firestore for routes
+export const db = admin.firestore();
 
 const app = express();
 
@@ -48,4 +62,6 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+app.listen(PORT, () =>
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
+);
