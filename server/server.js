@@ -3,17 +3,20 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import admin from "firebase-admin";
+import fs from "fs";
+import path from "path";
 import { authRoutes } from "./routes/auth.js";
 import { pollRoutes } from "./routes/poll.js";
 
 dotenv.config();
 
-// Initialize Firebase Admin SDK
-import serviceAccount from "./firebase-service-key.json" assert { type: "json" };
+// Initialize Firebase Admin SDK safely
+const serviceAccountPath = path.resolve("./keys.json"); // adjust if keys.json is elsewhere
+const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf8"));
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`
+  databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
 });
 
 export const db = admin.firestore(); // Export Firestore for routes
@@ -45,6 +48,4 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-  console.log(`🚀 Server running on http://localhost:${PORT}`)
-);
+app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
