@@ -1,62 +1,50 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
-// Prefer native fetch if using Node.js 18+
-// const fetch = require('node-fetch');
-const User = require('./models/User');
+// server.js
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import admin from "firebase-admin";
+import { authRoutes } from "./routes/auth.js";
+import { pollRoutes } from "./routes/poll.js";
+
+dotenv.config();
+
+// Initialize Firebase Admin SDK
+import serviceAccount from "./firebase-service-key.json" assert { type: "json" };
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`
+});
+
+export const db = admin.firestore(); // Export Firestore for routes
 
 const app = express();
 
-app.use(cors({
-  origin: 'https://silentvotes.vercel.app',
-  credentials: true
-}));
-
+// Middleware
+app.use(cors());
 app.use(express.json());
 
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/poll', require('./routes/poll'));
-
-app.get('/', (req, res) => res.send('SilentVote API is running 🚀'));
-app.get('/ping', (req, res) => res.send('Backend is active ✅'));
-
-const PORT = process.env.PORT || 5000;
-
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
-    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-    startKeepAlive();
-  })
-  .catch(err => {
-    console.error('❌ MongoDB connection error:', err.message);
-  });
-
-// Graceful shutdown
-process.on('SIGINT', async () => {
-  await mongoose.disconnect();
-  console.log('🚦MongoDB disconnected, server shutting down.');
-  process.exit(0);
+// Health check
+app.get("/", (req, res) => {
+  res.status(200).json({ message: "SilentVote API is running 🚀" });
 });
 
-function startKeepAlive() {
-  // MongoDB Keep-Alive (using a lightweight ping)
-  setInterval(async () => {
-    try {
-      await mongoose.connection.db.admin().ping();
-      console.log('✅ MongoDB keep-alive ping successful');
-    } catch (err) {
-      console.error('❌ MongoDB keep-alive failed:', err.message);
-    }
-  }, 5 * 60 * 1000);
+// Routes
+app.use("/users", authRoutes);
+app.use("/polls", pollRoutes);
 
-  // Backend Self-Ping (Native fetch if Node 18+, otherwise use node-fetch)
-  setInterval(() => {
-    fetch('https://silentvotes.onrender.com/ping')
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        console.log('🔄 Backend self-ping successful');
-      })
-      .catch(err => console.error('❌ Backend self-ping failed:', err.message));
-  }, 5 * 60 * 1000);
-}
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error("Global Error:", err);
+  res.status(500).json({ message: "Internal Server Error", error: err.message });
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () =>
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
+);

@@ -1,70 +1,78 @@
-const router = require('express').Router();
-const Poll = require('../models/Poll');
-const jwt = require('jsonwebtoken');
+// routes/poll.js
+import express from "express";
+import { admin } from "../firebase.js"; // Make sure this imports your initialized admin SDK
+import { verifyToken } from "./auth.js";
 
+const router = express.Router();
+const db = admin.firestore();
 
-router.post('/create', async (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).send("Unauthorized");
+// ✅ Create a new poll (only logged-in users)
+router.post("/", verifyToken, async (req, res) => {
+  try {
+    const { title, options } = req.body;
 
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  const userId = decoded.id;
+    if (!title || !options || !Array.isArray(options) || options.length < 2) {
+      return res.status(400).json({ message: "Title and at least 2 options are required" });
+    }
 
-  const { question, options } = req.body;
+    // Initialize votes to 0 for each option
+    const formattedOptions = options.map(opt => ({
+      text: opt,
+      votes: 0
+    }));
 
-  if (!question || !options || !Array.isArray(options)) {
-    return res.status(400).send("Invalid input");
+    const pollRef = await db.collection("polls").add({
+      title,
+      options: formattedOptions,
+      createdBy: req.user.uid,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    res.status(201).json({ id: pollRef.id, message: "Poll created successfully!" });
+  } catch (err) {
+    console.error("Error creating poll:", err);
+    res.status(500).json({ message: "Failed to create poll", error: err.message });
   }
-
-  const newPoll = new Poll({
-    question,
-    options,
-    votes: Array(options.length).fill(0),
-    createdBy: userId
-  });
-
-  await newPoll.save();
-  res.status(201).send("Poll created");
 });
 
-
-router.post('/create', async (req, res) => {
-  const { question, options, userId } = req.body;
-  const newPoll = new Poll({
-    question,
-    options,
-    votes: Array(options.length).fill(0),
-    voters: [],
-    createdBy: userId
-  });
-  await newPoll.save();
-  res.status(201).send("Poll created");
-});
-
-router.get('/', async (req, res) => {
-  const polls = await Poll.find();
-  res.json(polls);
-});
-
-router.post('/vote/:id', async (req, res) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).send("No token");
-
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  const userId = decoded.id;
-
-  const poll = await Poll.findById(req.params.id);
-  if (!poll.voters) poll.voters = [];
-
-  if (poll.voters.includes(userId)) {
-    return res.status(403).send("You already voted");
+// ✅ Get all polls
+router.get("/", async (req, res) => {
+  try {
+    const snapshot = await db.collection("polls").orderBy("createdAt", "desc").get();
+    const polls = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(polls);
+  } catch (err) {
+    console.error("Error fetching polls:", err);
+    res.status(500).json({ message: "Failed to fetch polls", error: err.message });
   }
-
-  poll.votes[req.body.optionIndex]++;
-  poll.voters.push(userId);
-  await poll.save();
-
-  res.send("Vote recorded");
 });
 
-module.exports = router;
+// ✅ Vote on a poll
+router.post("/:id/vote", verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { option } = req.body;
+
+    if (!option) return res.status(400).json({ message: "Option is required" });
+
+    const pollRef = db.collection("polls").doc(id);
+    const pollDoc = await pollRef.get();
+
+    if (!pollDoc.exists) return res.status(404).json({ message: "Poll not found" });
+
+    const poll = pollDoc.data();
+
+    const updatedOptions = poll.options.map(opt =>
+      opt.text === option ? { ...opt, votes: (opt.votes || 0) + 1 } : opt
+    );
+
+    await pollRef.update({ options: updatedOptions });
+
+    res.json({ message: "Vote submitted successfully!" });
+  } catch (err) {
+    console.error("Error voting on poll:", err);
+    res.status(500).json({ message: "Failed to submit vote", error: err.message });
+  }
+});
+
+export { router as pollRoutes };

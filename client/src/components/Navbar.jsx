@@ -1,15 +1,33 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { FiMenu, FiX } from 'react-icons/fi'; 
-import logo from '/logo.svg'; 
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { FiMenu, FiX } from "react-icons/fi"; 
+import { getAuth, signOut } from "firebase/auth";
+import logo from "/logo.svg";
+import app from "../firebase";
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const auth = getAuth(app);
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
+  // ✅ Check auth token on mount
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token && location.pathname !== "/login" && location.pathname !== "/register") {
+      navigate("/login");
+    }
+  }, [location.pathname]);
+
+  // 🔹 Logout function
+  const logout = async () => {
+    try {
+      await signOut(auth); // optional: sign out from Firebase
+      localStorage.removeItem("token");
+      navigate("/login");
+    } catch (err) {
+      console.error("❌ Logout failed", err);
+    }
   };
 
   const toggleMenu = () => {
@@ -42,7 +60,7 @@ export default function Navbar() {
 
         {/* Mobile Toggle Button */}
         <div className="md:hidden">
-          <button onClick={toggleMenu}>
+          <button onClick={toggleMenu} aria-label="Toggle menu">
             {isOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
         </div>

@@ -1,56 +1,45 @@
-const router = require('express').Router();
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+// routes/auth.js
+import express from "express";
+import { admin, db } from "../firebase.js"; // Firebase Admin SDK & Firestore
 
-// Register Route
-router.post('/register', async (req, res) => {
+const router = express.Router();
+
+// Middleware to verify Firebase ID token
+const verifyToken = async (req, res, next) => {
   try {
-    const { username, email, password } = req.body;
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ message: "No token provided" });
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).send("User already exists");
-
-    const hashed = await bcrypt.hash(password, 10);
-    const user = new User({ username, email, password: hashed });
-
-    await user.save();
-    res.status(201).send("User created");
+    const token = authHeader.split(" ")[1]; // Bearer <token>
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    req.user = decodedToken;
+    next();
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Something went wrong");
+    res.status(401).json({ message: "Invalid token", error: err.message });
+  }
+};
+
+// Sync user after login/register
+router.post("/sync", verifyToken, async (req, res) => {
+  try {
+    const { uid, email, name } = req.user;
+    const { username } = req.body; // username sent from frontend
+
+    const userRef = db.collection("users").doc(uid);
+    await userRef.set(
+      {
+        uid,
+        email,
+        name: name || username || "",
+        updatedAt: new Date(),
+      },
+      { merge: true } // merge so existing fields are not overwritten
+    );
+
+    res.json({ message: "User synced successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to sync user", error: err.message });
   }
 });
 
-// Login Route
-router.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email });
-    if (!user || !(await bcrypt.compare(password, user.password)))
-      return res.status(401).send("Invalid credentials");
-
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-
-    res.json({
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email
-      }
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Login failed");
-  }
-});
-
-// Test Route
-router.get('/test', (req, res) => {
-  res.send('Auth route is working ✅');
-});
-
-module.exports = router;
+export { router as authRoutes, verifyToken };

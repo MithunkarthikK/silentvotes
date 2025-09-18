@@ -1,0 +1,12 @@
+# Node
+node_modules
+.env
+
+# Firebase
+serviceAccountKey.json
+keys.json
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
