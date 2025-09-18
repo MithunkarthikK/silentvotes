@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
 import axios from "axios";
 import app from "../firebase"; // ✅ explicit Firebase app import
 
@@ -14,10 +19,10 @@ export default function Register() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const auth = getAuth(app); // ✅ use the same Firebase app
+  const auth = getAuth(app);
 
-  // 🔹 Sync user with backend
-  const syncUserWithBackend = async (user) => {
+  // 🔹 Sync user with backend Firestore
+  const syncUserWithBackend = async (user, name) => {
     try {
       const token = await user.getIdToken();
       await axios.post(
@@ -25,7 +30,7 @@ export default function Register() {
         {
           uid: user.uid,
           email: user.email,
-          name: username || user.displayName || "",
+          name: name || user.displayName || "",
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -47,28 +52,38 @@ export default function Register() {
     setLoading(true);
     try {
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
-      localStorage.setItem("token", await user.getIdToken());
-      await syncUserWithBackend(user);
+      const token = await user.getIdToken();
+      localStorage.setItem("token", token);
+
+      // Sync user with backend, using input username
+      await syncUserWithBackend(user, username);
+
       alert("✅ Registration successful");
       navigate("/dashboard");
     } catch (error) {
+      console.error(error);
       alert("❌ Registration failed: " + error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔹 Google signup
+  // 🔹 Google signup/login
   const handleGoogleSignup = async () => {
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
       const { user } = await signInWithPopup(auth, provider);
-      localStorage.setItem("token", await user.getIdToken());
-      await syncUserWithBackend(user);
-      alert("✅ Google signup successful");
+      const token = await user.getIdToken();
+      localStorage.setItem("token", token);
+
+      // Sync user with backend using displayName if username not provided
+      await syncUserWithBackend(user, user.displayName);
+
+      alert("✅ Google signup/login successful");
       navigate("/dashboard");
     } catch (error) {
+      console.error(error);
       alert("❌ Google signup failed: " + error.message);
     } finally {
       setLoading(false);

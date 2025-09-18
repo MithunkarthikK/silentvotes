@@ -25,19 +25,28 @@ export default function Login() {
       if (user) {
         const token = await user.getIdToken();
         localStorage.setItem("token", token);
+        // Sync user with Firestore
+        await syncUserWithBackend(user);
         navigate("/dashboard");
       }
     });
     return () => unsubscribe();
   }, []);
 
-  // 🔹 Sync user with backend
-  const syncUserWithBackend = async (token) => {
+  // 🔹 Sync user with backend Firestore
+  const syncUserWithBackend = async (user) => {
     try {
+      const token = await user.getIdToken();
       await axios.post(
         `${import.meta.env.VITE_API_URL}/users/sync`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          uid: user.uid,
+          email: user.email,
+          name: user.displayName || "",
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
     } catch (err) {
       console.error("❌ User sync failed", err);
@@ -60,7 +69,9 @@ export default function Login() {
       const token = await user.getIdToken();
       localStorage.setItem("token", token);
 
-      await syncUserWithBackend(token);
+      // Sync user with Firestore
+      await syncUserWithBackend(user);
+
       alert("✅ Login successful");
       navigate("/dashboard");
     } catch (error) {
@@ -80,7 +91,9 @@ export default function Login() {
       const token = await user.getIdToken();
       localStorage.setItem("token", token);
 
-      await syncUserWithBackend(token);
+      // Sync user with Firestore
+      await syncUserWithBackend(user);
+
       alert("✅ Google login successful");
       navigate("/dashboard");
     } catch (error) {

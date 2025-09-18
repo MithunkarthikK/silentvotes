@@ -1,6 +1,6 @@
 // routes/poll.js
 import express from "express";
-import { admin } from "../firebase.js"; // Make sure this imports your initialized admin SDK
+import { admin } from "../firebase.js"; // initialized Firebase Admin SDK
 import { verifyToken } from "./auth.js";
 
 const router = express.Router();
@@ -11,16 +11,18 @@ router.post("/", verifyToken, async (req, res) => {
   try {
     const { title, options } = req.body;
 
+    // Validation
     if (!title || !options || !Array.isArray(options) || options.length < 2) {
       return res.status(400).json({ message: "Title and at least 2 options are required" });
     }
 
-    // Initialize votes to 0 for each option
+    // Initialize votes for each option
     const formattedOptions = options.map(opt => ({
       text: opt,
       votes: 0
     }));
 
+    // Save poll to Firestore under "polls" collection
     const pollRef = await db.collection("polls").add({
       title,
       options: formattedOptions,
@@ -62,6 +64,7 @@ router.post("/:id/vote", verifyToken, async (req, res) => {
 
     const poll = pollDoc.data();
 
+    // Increment vote for the selected option
     const updatedOptions = poll.options.map(opt =>
       opt.text === option ? { ...opt, votes: (opt.votes || 0) + 1 } : opt
     );

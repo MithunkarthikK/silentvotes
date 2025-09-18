@@ -8,7 +8,8 @@ const router = express.Router();
 const verifyToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ message: "No token provided" });
+    if (!authHeader)
+      return res.status(401).json({ message: "No token provided" });
 
     const token = authHeader.split(" ")[1]; // Bearer <token>
     const decodedToken = await admin.auth().verifyIdToken(token);
@@ -22,23 +23,34 @@ const verifyToken = async (req, res, next) => {
 // Sync user after login/register
 router.post("/sync", verifyToken, async (req, res) => {
   try {
-    const { uid, email, name } = req.user;
-    const { username } = req.body; // username sent from frontend
+    const { uid, email, name: decodedName } = req.user;
+    const { username } = req.body; // optional username sent from frontend
 
     const userRef = db.collection("users").doc(uid);
-    await userRef.set(
-      {
+    const userDoc = await userRef.get();
+
+    if (userDoc.exists) {
+      // Update existing user
+      await userRef.update({
+        name: decodedName || username || userDoc.data().name || "",
+        updatedAt: new Date(),
+      });
+    } else {
+      // Create new user
+      await userRef.set({
         uid,
         email,
-        name: name || username || "",
+        name: decodedName || username || "",
+        createdAt: new Date(),
         updatedAt: new Date(),
-      },
-      { merge: true } // merge so existing fields are not overwritten
-    );
+      });
+    }
 
     res.json({ message: "User synced successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Failed to sync user", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to sync user", error: err.message });
   }
 });
 
