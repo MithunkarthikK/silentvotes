@@ -4,7 +4,7 @@ import { admin, db } from "../firebase.js"; // Firebase Admin SDK & Firestore
 
 const router = express.Router();
 
-// Middleware to verify Firebase ID token
+// 🔹 Middleware to verify Firebase ID token
 const verifyToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -21,7 +21,7 @@ const verifyToken = async (req, res, next) => {
   }
 };
 
-// Sync user after login/register
+// 🔹 Sync user after login/register
 router.post("/sync", verifyToken, async (req, res) => {
   try {
     const { uid, email, name: decodedName } = req.user;
@@ -32,13 +32,18 @@ router.post("/sync", verifyToken, async (req, res) => {
     const now = new Date();
 
     if (userDoc.exists) {
-      // Update existing user: update last login and optionally update name
+      // Update existing user: track last login and optionally update name
+      const currentData = userDoc.data();
+      const updatedName = decodedName || username || currentData.name || "";
+
       await userRef.update({
-        name: decodedName || username || userDoc.data().name || "",
+        name: updatedName,
         updatedAt: now,
         lastLogin: now,
-        loginHistory: admin.firestore.FieldValue.arrayUnion(now), // track login times
+        loginHistory: admin.firestore.FieldValue.arrayUnion(now), // track all login times
       });
+
+      console.log(`User ${uid} login updated at ${now.toISOString()}`);
     } else {
       // Create new user
       await userRef.set({
@@ -50,6 +55,8 @@ router.post("/sync", verifyToken, async (req, res) => {
         lastLogin: now,
         loginHistory: [now], // first login
       });
+
+      console.log(`New user ${uid} created at ${now.toISOString()}`);
     }
 
     res.json({ message: "User synced successfully", uid });

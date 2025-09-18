@@ -11,18 +11,16 @@ router.post("/", verifyToken, async (req, res) => {
   try {
     const { title, options } = req.body;
 
-    // Validation
     if (!title || !options || !Array.isArray(options) || options.length < 2) {
       return res.status(400).json({ message: "Title and at least 2 options are required" });
     }
 
-    // Initialize votes for each option
     const formattedOptions = options.map(opt => ({
       text: opt,
-      votes: 0
+      votes: 0,
+      votedBy: [], // track user IDs who voted
     }));
 
-    // Save poll to Firestore under "polls" collection
     const pollRef = await db.collection("polls").add({
       title,
       options: formattedOptions,
@@ -64,10 +62,24 @@ router.post("/:id/vote", verifyToken, async (req, res) => {
 
     const poll = pollDoc.data();
 
-    // Increment vote for the selected option
-    const updatedOptions = poll.options.map(opt =>
-      opt.text === option ? { ...opt, votes: (opt.votes || 0) + 1 } : opt
-    );
+    // Check if user already voted
+    const alreadyVoted = poll.options.some(opt => (opt.votedBy || []).includes(req.user.uid));
+    if (alreadyVoted) {
+      return res.status(400).json({ message: "You have already voted in this poll" });
+    }
+
+    // Increment vote for the selected option and store voter
+    const updatedOptions = poll.options.map(opt => {
+      if (opt.text === option) {
+        return {
+          ...opt,
+          votes: (opt.votes || 0) + 1,
+          votedBy: [...(opt.votedBy || []), req.user.uid],
+          lastVotedAt: admin.firestore.FieldValue.serverTimestamp(),
+        };
+      }
+      return opt;
+    });
 
     await pollRef.update({ options: updatedOptions });
 
